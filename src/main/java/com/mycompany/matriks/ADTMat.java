@@ -97,7 +97,7 @@ public class ADTMat {
                 TulisMATRIKS(M1);
                 System.out.println();
 
-                System.out.println("\Masukkan Elemen Matriks ke-2: ");
+                System.out.println("\nMasukkan Elemen Matriks ke-2: ");
                 for (i = 0; i < n; i++) {
                     for (j = 0; j < n; j++) {
                         M2.Data[i][j] = input.nextDouble();
@@ -537,52 +537,206 @@ public class ADTMat {
 		MainMenu();
 	}
 
-	// public void GetMATRIKSKoefisien(MATRIKS MAug, MATRIKS MK) {
-
-	// }
-
-	// public void GetMATRIKSHasil(MATRIKS MAug, MATRIKS MH) {
-
-	// }
-
 	// public void EliminasiOBE(MATRIKS M, int indeks) {
 
 	// }
 
-	// public void EliminasiOBEjordan(MATRIKS M, int indeks) {
-
-	// }
+	public void EliminasiOBEjordan(MATRIKS M, int indeks) {
+		// I.S INPUTAN MATRIKS dan Indeks yang akan menjadi acuan untuk dikurangi 
+		// F.S semua diatas angka 1 adalah 0 
+		int i,j,a;
+		double kali; 
+		j = 0;
+		while (j < M.NKolom && M.Data[indeks][j] != 1){
+			j+=1;
+		}
+		if (j < M.NKolom){
+			for (i=0; i < indeks; i++){
+				if (M.Data[i][j] != 0){
+					kali = M.Data[i][j];
+					for (a=j; a < M.NKolom; a++){
+						if (j < M.NKolom -1){
+							M.Data[i][a] -= (M.Data[indeks][a] * kali);
+						}
+					}
+				}
+			}
+		}
+	}
 
 	public void GaussSPL(MATRIKS M) {
 
 	}
 
 	public void GaussJordan(MATRIKS M) {
-
+		// I.S MATRIKS M
+		// F.S matriks echelon tereduksi 
+		int i;
+		GaussSPL(M);
+		for (i = 1; i < M.NBaris; i++){
+				EliminasiOBEjordan(M, i);
+		}
 	}
 
 	public void eliminasiBaris(MATRIKS M) {
 
 	}
 
-	// public Boolean isFree(MATRIKS M, int j) {
-
-	// }
-
-	// public boolean isAllZero(MATRIKS M, int i) {
-
-	// }
-
-	public void solusiGauss(MATRIKS M) {
-
+	public Boolean isFree(MATRIKS M, int j) {
+		//  APAKAH MATRIKS dengan indeks  kolom j free
+		int i;
+		boolean isfree;
+		isfree = true;
+		for (i=0; i < M.NBaris; i++ ){
+			if (M.Data[i][j]  != 0){
+				isfree = false;
+			}
+		}
+		return isfree;
 	}
 
-	// public String ParametrikOrUnik(MATRIKS M, int j) {
+	public boolean isAllZero(MATRIKS M, int i) {
+		// apakah pada baris tersebut semuanya bernilai 0
+		int j;
+		boolean isZero = true;
+		for (j =0; j <M.NKolom; j++){
+			if (M.Data[i][j] != 0){
+				isZero = false;
+			}
+		}
+		return isZero;
+	}
 
-	// }
+	public void solusiGauss(MATRIKS M) {
+		// I.S MATRIKS M 
+		// F.S SOLUSI DARI MATRIKS 
+		MATRIKS Gauss = new MATRIKS();
+		CopyMATRIKS(M, Gauss);
+		int i,j,now;
+		boolean firstparam;
+		String[] solusi = new String[100];
+		for (i = 1; i < M.NBaris; i++){
+			EliminasiOBEjordan(M, i);
+		}
+		eliminasiBaris(M);
+		// variabel yang sebenarnya tidak berguna
+		for (j=0; j < M.NKolom - 1; j++){
+			if (isFree(M,j)){
+				solusi[j] = "Free";
+			} else {
+				solusi[j] = ParametrikOrUnik(M,j);
+			}
+		}
+		for (i=0; i < M.NBaris; i++){
+			now = 99;
+			firstparam = true;
+			for (j=0; j <M.NKolom-1; j++){
+				if (M.Data[i][j]!= 0){
+					if (solusi[j] == "Unik" && now != 99){
+						solusi[j] = "Parametrik";
+					}
+					if (solusi[j] == "Unik" && M.Data[i][j]==1){
+						now = j ;
+						if (M.Data[i][M.NKolom-1]==0){
+							solusi[j] ="X"+String.valueOf(j+1)+" :" +" 0" ;
+						} else {
+							solusi[j] ="X"+String.valueOf(j+1)+" : " + String.format("%.2f",M.Data[i][M.NKolom-1]);
+						}
+					}
+					if (solusi[j] == "Parametrik"){
+						if (firstparam && M.Data[i][M.NKolom-1]==0){
+							solusi[now] = solusi[now] +" "+String.valueOf(M.Data[i][j]*-1)+"X"+String.valueOf(j+1);
+							firstparam = false;
+						} else {
+							solusi[now] = solusi[now] +" + "+String.valueOf(M.Data[i][j]*-1)+"X"+String.valueOf(j+1);
+						} 
+					}
+				}
+			}
+		}
+		System.out.println("Solusinya adalah :");
+		for (j=0; j < M.NKolom - 1; j++){
+			if (solusi[j]=="Free" || solusi[j]=="Parametrik"){
+				solusi[j] = "X"+String.valueOf(j+1)+" : " + "Free";
+			}
+			System.out.println(solusi[j]);
+			M.Deskripsi[j] = "\n" + solusi[j];
+		}
+		M.NDeskripsi = M.NKolom - 1;
+		CopyMATRIKS(Gauss, M);
+	}
+
+	public String ParametrikOrUnik(MATRIKS M, int j) {
+		//  APAKAH MATRIKS dengan indeks  kolom parametrik
+		int i, notzero, satu;
+		notzero = 0;
+		satu = 0;
+		for (i=0; i < M.NBaris; i++ ){
+			if (M.Data[i][j]  != 0){
+				notzero = notzero + 1;
+			}
+			if (M.Data[i][j]  == 1){
+				satu = satu + 1;
+			}
+		}
+		if (satu ==1 && notzero ==1){
+			return "Unik";
+		} else {
+			return "Parametrik";
+		}
+	}
 
 	public void solusiGaussJordan(MATRIKS M) {
-
+		// I.S MATRIKS M 
+		// F.S SOLUSI DARI MATRIKS 
+		int i,j,now;
+		boolean firstparam;
+		String[] solusi = new String[100];
+		
+		// variabel yang sebenarnya tidak berguna
+		for (j=0; j < M.NKolom - 1; j++){
+			if (isFree(M,j)){
+				solusi[j] = "Free";
+			} else {
+				solusi[j] = ParametrikOrUnik(M,j);
+			}
+		}
+		for (i=0; i < M.NBaris; i++){
+			now = 99;
+			firstparam = true;
+			for (j=0; j <M.NKolom-1; j++){
+				if (M.Data[i][j]!= 0){
+					if (solusi[j] == "Unik" && now != 99){
+						solusi[j] = "Parametrik";
+					}
+					if (solusi[j] == "Unik" && M.Data[i][j]==1){
+						now = j ;
+						if (M.Data[i][M.NKolom-1]==0){
+							solusi[j] ="X"+String.valueOf(j+1)+" :"+" 0"  ;
+						} else {
+							solusi[j] ="X"+String.valueOf(j+1)+" : " + String.format("%.2f",M.Data[i][M.NKolom-1]);
+						}
+					}
+					if (solusi[j] == "Parametrik"){
+						if (firstparam && M.Data[i][M.NKolom-1]==0){
+							solusi[now] = solusi[now] +" "+String.valueOf(M.Data[i][j]*-1)+"X"+String.valueOf(j+1);
+							firstparam = false;
+						} else {
+							solusi[now] = solusi[now] +" + "+String.valueOf(M.Data[i][j]*-1)+"X"+String.valueOf(j+1);
+						} 
+					}
+				}
+			}
+		}
+		System.out.println("Solusinya adalah :");
+		for (j=0; j < M.NKolom - 1; j++){
+			if (solusi[j]=="Free" || solusi[j]=="Parametrik"){
+				solusi[j] = "X"+String.valueOf(j+1)+" : " + "Free";
+			}
+			System.out.println(solusi[j]);
+			M.Deskripsi[j] = "\n" + solusi[j];
+		}
+		M.NDeskripsi = M.NKolom - 1;
 	}
 
 	public void MainMenu() {
