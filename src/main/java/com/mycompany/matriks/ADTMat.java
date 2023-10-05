@@ -537,9 +537,28 @@ public class ADTMat {
 		MainMenu();
 	}
 
-	// public void EliminasiOBE(MATRIKS M, int indeks) {
-
-	// }
+	public void EliminasiOBE(MATRIKS M, int indeks) {
+		// I.S MATRIKS
+		// F.S dieliminasikan baris dengan indeks indeks
+		int i, j, a;
+		// buat semua dimulai dengan angka 1
+		for (i = 0; i < M.NBaris; i++) {
+			BagiBaris(M, i);
+		}
+		j = 0;
+		while (M.Data[indeks][j] != 1 && j < M.NKolom) {
+			j += 1;
+		}
+		if (j < M.NKolom) {
+			for (i = indeks + 1; i < M.NBaris; i++) {
+				if (M.Data[i][j] == 1) {
+					for (a = j; a < M.NKolom; a++) {
+						M.Data[i][a] -= M.Data[indeks][a];
+					}
+				}
+			}
+		}
+	}
 
 	public void EliminasiOBEjordan(MATRIKS M, int indeks) {
 		// I.S INPUTAN MATRIKS dan Indeks yang akan menjadi acuan untuk dikurangi 
@@ -565,7 +584,14 @@ public class ADTMat {
 	}
 
 	public void GaussSPL(MATRIKS M) {
-
+		// I.S Matriks M
+		// F.S Matriks Eksilon Terbentuk
+		int i;
+		for (i = 0; i < M.NBaris - 1; i++) {
+			SortBaris(M);
+			EliminasiOBE(M, i);
+		}
+		BagiBaris(M, i);
 	}
 
 	public void GaussJordan(MATRIKS M) {
@@ -579,7 +605,30 @@ public class ADTMat {
 	}
 
 	public void eliminasiBaris(MATRIKS M) {
-
+		// Mengeliminasi baris yang isallzero
+		int i, j, eliminasi;
+		MATRIKS M1 = new MATRIKS();
+		eliminasi = 0;
+		for (i = 0; i < M.NBaris; i++) {
+			if (isAllZero(M, i)) {
+				eliminasi += 1;
+			}
+		}
+		i = 0;
+		// BUAT matriks baru
+		BuatMATRIKS(M.NBaris - eliminasi, M.NKolom, M1);
+		for (i = 0; i < M1.NBaris; i++) {
+			for (j = 0; j < M1.NKolom; j++) {
+				M1.Data[i][j] = M.Data[i][j];
+			}
+		}
+		// Copy matriks
+		BuatMATRIKS(M1.NBaris, M1.NKolom, M);
+		for (i = 0; i < M1.NBaris; i++) {
+			for (j = 0; j < M1.NKolom; j++) {
+				M.Data[i][j] = M1.Data[i][j];
+			}
+		}
 	}
 
 	public Boolean isFree(MATRIKS M, int j) {
