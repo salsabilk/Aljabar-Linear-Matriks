@@ -6,7 +6,11 @@ package com.mycompany.matriks;
 
 /**
  *
- * @author Alisha Nara
+ * @author
+ *         Alisha Nara Chandrakirana 22152405
+ *         Asri Husnul Rosadi 22152405
+ *         Niqa Nabila Nur Ihsani 221524054
+ *         Salsabil Khoirunisa 221524058
  */
 import java.util.Scanner;
 import java.lang.Math;
@@ -439,36 +443,260 @@ public class ADTMat {
 	////////// DETERMINAN////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	public void MenuDeterminan() {
+			MATRIKS M = new MATRIKS();
+            int op2;
+            System.out.println("Anda telah memilih menu Determinan");
+            BacaMATRIKS(M);
 
+            System.out.println("Silahkan pilih metode pencarian determinan [1= Ekspansi Kofaktor, 2= Segitiga Atas, 3=Segitiga Bawah]");
+            System.out.print("Masukkan pilihan : ");
+            op2 = sc.nextInt();
+            while (op2 != 1 && op2 != 2 && op2 != 3){
+                    System.out.println("Pilihan salah !! Silahkan pilih metode pencarian determinan [1= Ekspansi Kofaktor, 2= Segitiga Atas, 3=Segitiga Bawah]");
+                    System.out.print("Masukkan pilihan : ");
+                    op2 = sc.nextInt();
+                    System.out.println("");
+            }
+            if (op2 == 1) {
+                    DeterminanKofaktor(M);
+            } else if (op2 == 2){
+                    Segiatas(M);
+            } else if (op2 == 3){
+                    Segibawah(M);
+            }
+            MainMenu();
 	}
 
-	// public double EkspansiKofaktor(MATRIKS M) {
+	public double EkspansiKofaktor(MATRIKS M) {
+		/* Prekondisi: IsPersegi(M) */
+		/* Menghitung nilai determinan M menggunakan ekspansi kofaktor pada baris ke-1 */
+		if (M.NBaris == 1)
+		{
+			return M.Data[0][0];
+		}
+		else
+		{
+			MATRIKS Minor = new MATRIKS();
+			BuatMATRIKS((M.NBaris - 1), (M.NKolom - 1), Minor);
+			int i, j, k, ci, cj;
+			double det;
+			int koef = 1;
 
-	// }
+			det = 0;
+			if (M.NBaris == 2)
+			{
+				det = M.Data[0][0] * M.Data[1][1] - M.Data[0][1] * M.Data[1][0];
+				return det;
+			}
+			else
+			{
+				for (i = 0; i < M.NBaris; i++)
+				{
+					ci = 0; 
+					cj = 0;
+					for (j = 0; j < M.NBaris; j++)
+					{
+						for (k = 0; k < M.NBaris; k++)
+						{
+							if (j != 0 && k != i)
+							{
+								Minor.Data[ci][cj] = M.Data[j][k];
+								cj = cj + 1;
+								if (cj > M.NBaris - 2)
+								{
+									ci = ci + 1;
+									cj = 0;
+								}
+							}
+						}
+					}
+					det = det + koef * ((M.Data[0][i]) * EkspansiKofaktor(Minor));
+					koef = -1 * koef;
+				}
+			}
+			return det;
+		}
+	}
 
-	// public void DeterminanKofaktor(MATRIKS M) {
+	public void DeterminanKofaktor(MATRIKS M) {
+		double det = EkspansiKofaktor(M);
+		MATRIKSKofaktor2(M);
+		System.out.println("Matriks kofaktornya adalah: ");
+		TulisMATRIKS(M);
+		System.out.println("");
+		System.out.print("Determinannya adalah: ");
+		System.out.println(det);
+		M.NDeskripsi = 1;
+		M.Deskripsi[0] = "Matriks Kofaktor, Determinannya adalah " + String.valueOf(det);
+	}
 
-	// }
+	public double KofakElmt(MATRIKS M, int i, int j) {
+		/* I.S. M terdefinisi, i, j dalam range matriks */
+		/* F.S. Mengeluarkan elemen kofaktor(i,j) dari sebuah matriks */
+		MATRIKS Minor = new MATRIKS();
+		BuatMATRIKS((M.NBaris - 1), (M.NKolom - 1), Minor);
+		int ii, jj, mi, mj;
+		double koef = Math.pow(-1, (i+j+2)) ;
+		mi = 0; 
+		mj = 0;
+		for (ii = 0; ii < M.NBaris; ii++) {
+			for (jj = 0; jj < M.NKolom; jj++) {
+				if (ii != i && jj != j) {
+					Minor.Data[mi][mj] = M.Data[ii][jj];
+					mj = mj + 1;
+					if (mj > M.NBaris - 2) {
+						mi = mi + 1;
+						mj = 0;
+					}
+				}
+			}
+		}
+		return EkspansiKofaktor(Minor)*koef ;
+	}
 
-	// public double KofakElmt(MATRIKS M, int i, int j) {
-
-	// }
-
-	// public MATRIKS MATRIKSKofaktor(MATRIKS M) {
-
-	// }
+	public MATRIKS MATRIKSKofaktor(MATRIKS M) {
+		/* I.S. M terdefinisi */
+		/* F.S. Mengeluarkan Matriks kofaktor dari sebuah matriks */
+		int i,j;
+		MATRIKS Kofaktor = new MATRIKS();
+		BuatMATRIKS(M.NBaris,M.NKolom,Kofaktor);
+		for (i = 0; i < M.NBaris; i++)
+		{
+			for (j = 0; j < M.NKolom; j++)
+			{
+				Kofaktor.Data[i][j] = KofakElmt(M, i, j);
+			}
+		}
+		return Kofaktor;
+	}
 
 	public void MATRIKSKofaktor2(MATRIKS M) {
-
+		/* I.S. M terdefinisi */
+		/* F.S. Mengeluarkan Matriks kofaktor dari sebuah matriks */
+		int i,j;
+		MATRIKS Kofaktor = new MATRIKS();
+		BuatMATRIKS(M.NBaris,M.NKolom,Kofaktor);
+		for (i = 0; i < M.NBaris; i++)
+		{
+			for (j = 0; j < M.NKolom; j++)
+			{
+				Kofaktor.Data[i][j] = KofakElmt(M, i, j);
+			}
+		}
+		M.Data = Kofaktor.Data;
 	}
 
-	// public void Segiatas(MATRIKS M) {
+	public void Segiatas(MATRIKS M) {
+		/* I.S. M terdefinisi, IsPersegi(M) */
+		/* F.S. Menghitung nilai determinan matriks M dengan metode segitiga atas. 
+		   Menulis ke layar matriks segitiga atas yang terbentuk dan determinan matriks awal. */
+		int n, i, j; 
+		double line1, line2;
+		float count = 1;
+		boolean found;
+		for (n = 0; n < M.NBaris; n++){
+			if (M.Data[n][n] == 0){
+				found = false;
+			  	i = n+1;
+			  	while (!found && i < M.NBaris){
+					if (M.Data[i][n] != 0){
+						found = true;
+						for (j = n; j < M.NKolom; j++){
+							M.Data[n][j] += M.Data[i][j];
+						}
+				 	}
+				 	i++;
+				}
+				if (!found){
+					count = 0;
+					n = M.NBaris;
+					System.out.println("Matriks tidak dapat membentuk matriks segitiga atas.");
+					System.out.println("Kondisi matriks setelah melakukan OBE:");
+					TulisMATRIKS(M);
+					System.out.println();
+					System.out.println("Determinan matriks = 0.0");
+				}  
+			}
+		   	for (i = n+1; i < M.NBaris; i++){       
+			  	if (M.Data[i][n] != 0){        
+				 	line1 = M.Data[n][n];
+				 	line2 = M.Data[i][n]; 
+					for (j = n; j < M.NKolom; j++){
+						M.Data[n][j] /= line1;
+						M.Data[i][j] /= line2;
+						M.Data[i][j] -= M.Data[n][j];
+					}
+					count *= (line1 * line2);
+				}
+			}
+			count *= M.Data[n][n];
+		}
+		if (count != 0){
+			System.out.println("Matriks segitiga atas berhasil terbentuk.");
+			System.out.println("Matriks segitiga atas tersebut adalah:");
+			TulisMATRIKS(M);
+			System.out.println();
+			System.out.println("Determinan matriks = " + count);
+			M.NDeskripsi = 1;
+			M.Deskripsi[0] = "Matriks Segitiga Atas, Determinannya adalah " + String.valueOf(count);
+		}
+	}
 
-	// }
-
-	// public void Segibawah(MATRIKS M) {
-
-	// }
+	public void Segibawah(MATRIKS M) {
+		/* I.S. M terdefinisi, IsPersegi(M) */
+		/* F.S. Menghitung nilai determinan matriks M dengan metode segitiga bawah. 
+		   Menulis ke layar matriks segitiga bawah yang terbentuk dan determinan matriks awal. */
+		int n, i, j; 
+		double line1, line2;
+		float count = 1;
+		boolean found;
+		for (n = M.NBaris-1; n >= 0; n--){
+			if (M.Data[n][n] == 0){
+				found = false;
+			  	i = n-1;
+			  	while (!found && i >= 0){
+					if (M.Data[i][n] != 0){
+						found = true;
+						for (j = n; j >= 0; j--){
+							M.Data[n][j] += M.Data[i][j];
+						}
+				 	}
+				 	i--;
+				}
+				if (!found){
+					count = 0;
+					n = -1;
+					System.out.println("Matriks tidak dapat membentuk matriks segitiga bawah.");
+					System.out.println("Kondisi matriks setelah melakukan OBE:");
+					TulisMATRIKS(M);
+					System.out.println();
+					System.out.println("Matriks Segitiga Bawah, Determinan matriks = 0.0");
+				}  
+			}
+		   	for (i = n-1; i >= 0; i--){       
+			  	if (M.Data[i][n] != 0){        
+				 	line1 = M.Data[n][n];
+				 	line2 = M.Data[i][n]; 
+					for (j = n; j >= 0; j--){
+						M.Data[n][j] /= line1;
+						M.Data[i][j] /= line2;
+						M.Data[i][j] -= M.Data[n][j];
+					}
+					count *= (line1 * line2);
+				}
+			}
+			count *= M.Data[n][n];
+		}
+		if (count != 0){
+			System.out.println("Matriks segitiga bawah berhasil terbentuk.");
+			System.out.println("Matriks segitiga bawah tersebut adalah:");
+			TulisMATRIKS(M);
+			System.out.println();
+			System.out.println("Determinan matriks = " + count);
+			M.NDeskripsi = 1;
+			M.Deskripsi[0] = "Matriks Segitiga Bawah, Determinannya adalah " + String.valueOf(count);
+		}
+	}
 
 	////////// INVERS////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public void MenuInvers() {
